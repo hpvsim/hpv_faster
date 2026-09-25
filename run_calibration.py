@@ -246,6 +246,7 @@ if __name__ == "__main__":
     locations = [
         'cote d\'ivoire',
         'zambia',
+        'sierra leone',
     ]
 
     # Run calibration - usually on VMs

@@ -1,0 +1,12 @@
+{
+  "beta": 0.12000000000000001,
+  "f_cross_layer": 0.05,
+  "m_cross_layer": 0.25,
+  "f_partners_c_par1": 0.12000000000000001,
+  "m_partners_c_par1": 0.28,
+  "hi5_cin_fn_k": 0.3,
+  "ohr_cin_fn_k": 0.19,
+  "_country": "sierra_leone",
+  "_mismatch": 2.1167861421274714,
+  "_calibration_index": 671.0
+}

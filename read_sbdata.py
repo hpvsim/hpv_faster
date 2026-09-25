@@ -157,13 +157,12 @@ def read_debut_data(dist_type='lognormal'):
                 
             ages = np.array(ages)
             percentages = np.array(percentages)
-            
-            # Interpolate to find 25th percentile age
-            if percentages.max() >= 25:
-                x1 = np.interp(25, percentages, ages)
-                p1 = 0.25
+            # Interpolate to find 10th percentile age
+            if percentages.max() >= 10:
+                x1 = np.interp(10, percentages, ages)
+                p1 = 0.10
             else:
-                # If we don't reach 25%, use the highest percentage available
+                # If we don't reach 10%, use the highest percentage available
                 max_idx = np.argmax(percentages)
                 x1 = ages[max_idx]
                 p1 = percentages[max_idx] / 100

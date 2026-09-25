@@ -6,5 +6,6 @@ Locations
 locations = [
     'cote d\'ivoire',
     'zambia',
+    'sierra leone',
 ]
 

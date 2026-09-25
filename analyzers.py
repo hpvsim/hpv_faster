@@ -120,14 +120,29 @@ class econ_analyzer(hpv.Analyzer):
             # Pull out characteristics of sim to decide what resources we need
             simvals = sim.meta.vals
             scenario_label = simvals.scen
-            self.df["new_vaccinations"] += sim.get_intervention(
-                    "Routine vx"
-                ).n_products_used.values[idx]
-            self.df["new_vaccinations"] += sim.get_intervention(
-                    "Catchup vx"
-                ).n_products_used.values[idx]
+            
+            # Check for routine vaccination intervention
+            routine_intv = sim.get_intervention("Routine vx", die=False)
+            if routine_intv is not None:
+                self.df["new_vaccinations"] += routine_intv.n_products_used.values[idx]
+            
+            # Check for catchup vaccination intervention  
+            catchup_intv = sim.get_intervention("Catchup vx", die=False)
+            if catchup_intv is not None:
+                self.df["new_vaccinations"] += catchup_intv.n_products_used.values[idx]
 
-            if scenario_label != '90-0-0' and scenario_label != '50-0-0':
+            # Check if this is a vaccination-only scenario (skip screening/treatment)
+            is_vaccination_only = (scenario_label in ['90-0-0', '50-0-0'] or 
+                                 'baseline' in scenario_label or 
+                                 scenario_label.startswith('vx_') or
+                                 scenario_label.startswith('test_') or
+                                 'annual' in scenario_label or
+                                 'biennial' in scenario_label or
+                                 'triennial' in scenario_label or
+                                 'quadrennial' in scenario_label or
+                                 'quinquennial' in scenario_label)
+            
+            if not is_vaccination_only:
                 self.df["new_hpv_screens"] += sim.get_intervention(
                             "screening"
                         ).n_products_used.values[idx]
@@ -147,5 +162,131 @@ class econ_analyzer(hpv.Analyzer):
                 ).n_products_used.values[idx]
  
 
+        return
+
+
+class genotype_analyzer(hpv.Analyzer):
+    """
+    Analyzer for tracking HPV incidence and cancer rates by genotype.
+    
+    Produces annual results for each genotype (16, 18, hi5, ohr):
+    - New HPV infections by type
+    - New cancer cases by type  
+    - Cancer deaths by type
+    - Prevalence by type
+    """
+    
+    def __init__(self, start=2020, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.start = start
+        self.si = None  # Start index
+        return
+    
+    def initialize(self, sim):
+        super().initialize(sim)
+        
+        # Set start index based on start year
+        if self.start is None:
+            self.start = sim["start"]
+        self.si = sc.findfirst(sim.res_yearvec, self.start)
+        self.npts = len(sim.res_yearvec[self.si:])
+        self.years = sim.res_yearvec[self.si:]
+        
+        # Get genotypes from simulation
+        self.genotypes = sim['genotypes']
+        
+        # Initialize result arrays for each genotype
+        self.results = {}
+        for genotype in self.genotypes:
+            geno_name = f"hpv{genotype}" if isinstance(genotype, int) else genotype
+            self.results[geno_name] = {
+                'new_infections': np.zeros(self.npts),
+                'new_cancers': np.zeros(self.npts), 
+                'cancer_deaths': np.zeros(self.npts),
+                'prevalence': np.zeros(self.npts)
+            }
+        
+        return
+    
+    def apply(self, sim):
+        # Get current time point - check if we're in the tracking period
+        if sim.yearvec[sim.t] < self.start:
+            return
+        
+        # Find the index in our results arrays
+        current_year = sim.yearvec[sim.t]
+        ti = sc.findfirst(self.years, np.floor(current_year))
+        if ti is None or ti >= self.npts:
+            return
+            
+        people = sim.people
+        
+        # Process each genotype
+        for gi, genotype in enumerate(self.genotypes):
+            geno_name = f"hpv{genotype}" if isinstance(genotype, int) else genotype
+            
+            # Check if we have enough genotypes in the data
+            if gi >= people.date_infectious.shape[1]:
+                continue
+                
+            # New infections this timestep (people who became infected with this genotype)
+            if hasattr(people, 'date_infectious'):
+                newly_infected = people.date_infectious[:, gi] == sim.t
+                self.results[geno_name]['new_infections'][ti] += newly_infected.sum()
+            
+            # Current prevalence (active infections of this genotype)
+            if hasattr(people, 'infectious'):
+                currently_infected = people.infectious[:, gi]
+                self.results[geno_name]['prevalence'][ti] = currently_infected.sum()
+            
+            # New cancers this timestep (people who progressed to cancer with this genotype)
+            if hasattr(people, 'date_cancerous'):
+                newly_cancerous = people.date_cancerous[:, gi] == sim.t
+                self.results[geno_name]['new_cancers'][ti] += newly_cancerous.sum()
+            
+            # Cancer deaths this timestep (attributed to this genotype)
+            # Note: HPVsim doesn't track which genotype caused cancer death, so we estimate
+            # based on the proportion of current cancerous cases by genotype
+            if hasattr(people, 'date_dead_cancer') and hasattr(people, 'cancerous'):
+                total_cancer_deaths = (people.date_dead_cancer == sim.t).sum()
+                
+                if total_cancer_deaths > 0:
+                    # Calculate proportion of current cancerous cases by genotype
+                    current_cancerous_by_genotype = people.cancerous[:, gi].sum()
+                    total_current_cancerous = people.cancerous.sum()
+                    
+                    if total_current_cancerous > 0:
+                        # Attribute deaths proportionally to current cancer burden by genotype
+                        genotype_proportion = current_cancerous_by_genotype / total_current_cancerous
+                        attributed_deaths = total_cancer_deaths * genotype_proportion
+                    else:
+                        # Fallback to equal distribution if no current cancerous cases
+                        attributed_deaths = total_cancer_deaths / len(self.genotypes)
+                        
+                    self.results[geno_name]['cancer_deaths'][ti] += attributed_deaths
+        
+        return
+    
+    def finalize(self, sim):
+        """Convert results to rates per 100,000 population"""
+        
+        # Get population size by time point for rate calculations
+        pop_sizes = sim.results['n_alive'][self.si:]
+        
+        # Convert to rates per 100,000
+        self.rates = {}
+        for genotype in self.genotypes:
+            geno_name = f"hpv{genotype}" if isinstance(genotype, int) else genotype
+            self.rates[geno_name] = {}
+            
+            for metric in ['new_infections', 'new_cancers', 'cancer_deaths', 'prevalence']:
+                # Calculate rate per 100,000 population
+                self.rates[geno_name][f'{metric}_rate'] = (
+                    self.results[geno_name][metric] / pop_sizes * 100000
+                )
+        
+        # Store years for easy access
+        self.rate_years = self.years
+        
         return
 

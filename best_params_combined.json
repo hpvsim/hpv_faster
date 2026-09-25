@@ -1,0 +1,40 @@
+{
+  "zambia": {
+    "beta": 0.1,
+    "f_cross_layer": 0.1,
+    "f_partners_c_par1": 0.26,
+    "hi5_cin_fn_k": 0.35,
+    "m_cross_layer": 0.35,
+    "m_partners_c_par1": 0.34,
+    "ohr_cin_fn_k": 0.28,
+    "sev_dist_par1": 1.33,
+    "_country": "zambia",
+    "_mismatch": 1.51687,
+    "_calibration_index": 1698.0
+  },
+  "cote_d_ivoire": {
+    "beta": 0.1,
+    "f_cross_layer": 0.1,
+    "f_partners_c_par1": 0.22,
+    "hi5_cin_fn_k": 0.25,
+    "m_cross_layer": 0.3,
+    "m_partners_c_par1": 0.28,
+    "ohr_cin_fn_k": 0.2,
+    "sev_dist_par1": 1.21,
+    "_country": "cote_divoire",
+    "_mismatch": 0.917963,
+    "_calibration_index": 429.0
+  },
+  "sierra_leone": {
+    "beta": 0.12000000000000001,
+    "f_cross_layer": 0.05,
+    "m_cross_layer": 0.25,
+    "f_partners_c_par1": 0.12000000000000001,
+    "m_partners_c_par1": 0.28,
+    "hi5_cin_fn_k": 0.3,
+    "ohr_cin_fn_k": 0.19,
+    "_country": "sierra_leone",
+    "_mismatch": 2.1167861421274714,
+    "_calibration_index": 671.0
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "beta": 0.1,
+  "f_cross_layer": 0.1,
+  "f_partners_c_par1": 0.22,
+  "hi5_cin_fn_k": 0.25,
+  "m_cross_layer": 0.3,
+  "m_partners_c_par1": 0.28,
+  "ohr_cin_fn_k": 0.2,
+  "sev_dist_par1": 1.21,
+  "_country": "cote_divoire",
+  "_mismatch": 0.917963,
+  "_calibration_index": 429.0
+}

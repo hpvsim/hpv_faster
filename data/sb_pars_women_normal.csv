@@ -1,6 +1,11 @@
 ,location,par1,par2,dist
-0,Zambia,15.870544090056287,2.1313682748150784,normal
-1,Zambia Western,14.874595469255663,1.6122436501764257,normal
-2,Zambia Luapula,15.892523364485982,2.0865459742737738,normal
-3,Cote d'Ivoire,15.68884997081144,2.0228436824693756,normal
-4,Cote d'Ivoire Denguele,15.343157894736843,1.8469682096318465,normal
+0,Zambia,15.87054409,1.955530055,normal
+1,Zambia Western,14.87459547,1.668314192,normal
+2,Zambia Luapula,15.89252336,2.027768763,normal
+3,Zambia Ultra High Risk,14.20037756,1.440732034,normal
+4,Cote d'Ivoire,15.68884997,1.929903039,normal
+5,Cote d'Ivoire Denguele,15.34315789,2.141460817,normal
+6,Cote d'Ivoire Ultra High Risk,14.4714243,1.862634498,normal
+7,Sierra Leone,17.3504806,3.79800125,normal
+8,Sierra Leone High Risk,16.3504806,3.79800125,normal
+9,Sierra Leone Ultra High Risk,15.3504806,3.79800125,normal

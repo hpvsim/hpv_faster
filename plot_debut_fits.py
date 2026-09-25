@@ -24,7 +24,6 @@ def plot_debut_comparison():
     # Read data and fitted parameters for both distributions
     print("Loading lognormal fits...")
     countries_ln, dff_ln, df2_ln, rvs_ln = read_debut_data(dist_type='lognormal')
-    
     print("Loading normal fits...")  
     countries_n, dff_n, df2_n, rvs_n = read_debut_data(dist_type='normal')
     
@@ -34,7 +33,7 @@ def plot_debut_comparison():
     
     for sex_key, sex_name in {'f': 'Women', 'm': 'Men'}.items():
         
-        fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+        fig, axes = plt.subplots(2, 4, figsize=(15, 10))
         axes = axes.flatten()
         
         dfw_ln = dff_ln[sex_name]
@@ -43,10 +42,12 @@ def plot_debut_comparison():
         for pn, country in enumerate(countries):
             if pn >= len(axes):
                 break
-                
+            if pd.isna(country):
+                continue
             ax = axes[pn]
             
             # Map country name for data lookup
+            print(country)
             data_country = ut.map_sb_loc(country)
             
             # Plot the actual data points
@@ -93,8 +94,8 @@ def plot_debut_comparison():
             ax.legend(fontsize=8)
         
         # Remove empty subplots
-        for i in range(len(countries), len(axes)):
-            fig.delaxes(axes[i])
+        #for i in range(len(countries), len(axes)):
+         #   fig.delaxes(axes[i])
         
         plt.tight_layout()
         plt.savefig(f"figures/debut_fits_{sex_name.lower()}.png", dpi=300, bbox_inches='tight')

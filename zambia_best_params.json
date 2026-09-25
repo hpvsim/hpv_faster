@@ -1,0 +1,13 @@
+{
+  "beta": 0.1,
+  "f_cross_layer": 0.1,
+  "f_partners_c_par1": 0.26,
+  "hi5_cin_fn_k": 0.35,
+  "m_cross_layer": 0.35,
+  "m_partners_c_par1": 0.34,
+  "ohr_cin_fn_k": 0.28,
+  "sev_dist_par1": 1.33,
+  "_country": "zambia",
+  "_mismatch": 1.51687,
+  "_calibration_index": 1698.0
+}

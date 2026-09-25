@@ -34,6 +34,7 @@ def map_sb_loc(location):
     if location == "Cote Divoire": location = "Cote d'Ivoire"
     if location == "Cote D'Ivoire": location = "Cote d'Ivoire"  # Fix capitalization issue
     if location == "Cote D'Ivoire Denguele": location = "Cote d'Ivoire Denguele"  # Fix capitalization issue
+    if location == "Cote D'Ivoire Ultra High Risk": location = "Cote d'Ivoire Ultra High Risk"  # Fix capitalization issue
     if location == "Drc": location = 'Congo Democratic Republic'
     return location
 
@@ -76,7 +77,7 @@ def make_sb_data(location=None, dist_type='lognormal', debut_bias=[0,0]):
 def make_datafiles(locations):
     ''' Get the relevant datafiles for the selected locations '''
     datafiles = dict()
-    asr_locs            = ['drc', 'ethiopia', 'kenya', 'nigeria', 'tanzania', 'uganda', 'zambia', 'cote d\'ivoire']
+    asr_locs            = ['drc', 'ethiopia', 'kenya', 'nigeria', 'tanzania', 'uganda', 'zambia', 'cote d\'ivoire', 'sierra leone']
     cancer_type_locs    = ['ethiopia', 'kenya', 'nigeria', 'tanzania', 'india', 'uganda']
     cin_type_locs       = ['nigeria', 'tanzania', 'india', 'cote d\'ivoire', 'zambia']
 
