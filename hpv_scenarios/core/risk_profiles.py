@@ -165,18 +165,11 @@ class RiskProfileLoader:
         country_mapping = {
             "zambia": {
                 "national": ["Zambia"],
-                "high_risk": ["Zambia Western", "Zambia Luapula"],
-                "ultra_high_risk": ["Zambia Ultra High Risk"]
-            },
-            "cote d'ivoire": {
-                "national": ["Cote d'Ivoire"],
-                "high_risk": ["Cote d'Ivoire Denguele"],
-                "ultra_high_risk": ["Cote d'Ivoire Ultra High Risk"]
+                "high_risk": ["Zambia High Risk"],
             },
             "sierra leone": {
                 "national": ["Sierra Leone"],
                 "high_risk": ["Sierra Leone High Risk"],
-                "ultra_high_risk": ["Sierra Leone Ultra High Risk"]
             }
         }
         
@@ -274,7 +267,7 @@ class RiskProfileManager:
         """Get summary of all available risk profiles."""
         data = []
         
-        countries = ["zambia", "cote d'ivoire"]
+        countries = ["zambia", "sierra leone"]
         for country in countries:
             try:
                 profiles = self.loader.get_country_profiles(country)
@@ -361,9 +354,9 @@ if __name__ == "__main__":
         zambia_national = manager.load_profile_for_scenario("zambia", "national")
         print(f"Zambia National - Female par1: {zambia_national['f']['par1']:.2f}")
         
-        # High-risk profile for Zambia Western
-        zambia_hr = manager.load_profile_for_scenario("zambia", "high_risk", "Zambia Western")
-        print(f"Zambia Western - Female par1: {zambia_hr['f']['par1']:.2f}")
+        # High-risk profile for Zambia
+        zambia_hr = manager.load_profile_for_scenario("zambia", "high_risk")
+        print(f"Zambia High Risk - Female par1: {zambia_hr['f']['par1']:.2f}")
         
         # Test with debut bias
         zambia_biased = manager.load_profile_for_scenario("zambia", "national", debut_bias=(-1.0, -1.0))

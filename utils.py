@@ -33,9 +33,7 @@ def map_sb_loc(location):
     location = location.title()
     if location == "Cote Divoire": location = "Cote d'Ivoire"
     if location == "Cote D'Ivoire": location = "Cote d'Ivoire"  # Fix capitalization issue
-    if location == "Cote D'Ivoire Denguele": location = "Cote d'Ivoire Denguele"  # Fix capitalization issue
-    if location == "Cote D'Ivoire Ultra High Risk": location = "Cote d'Ivoire Ultra High Risk"  # Fix capitalization issue
-    if location == "Drc": location = 'Congo Democratic Republic'
+if location == "Drc": location = 'Congo Democratic Republic'
     return location
 
 
@@ -504,10 +502,10 @@ def plot_CEA(locations=None, background_scens=None, txvx_scen=None, discounting=
                                (NoTxV_econdf_counts['new_leeps'].values * cost_dict['leep']) + \
                                (NoTxV_econdf_counts['new_cancer_treatments'].values * cost_dict['cancer'])
             if discounting:
-                cost_noTxV = np.sum([i / 1.03 ** t for t, i in enumerate(total_cost_noTxV)])
+                loc_cost_noTxV = np.sum([i / 1.03 ** t for t, i in enumerate(total_cost_noTxV)])
             else:
-                cost_noTxV = np.sum(total_cost_noTxV)
-            cost_noTxV += cost_noTxV
+                loc_cost_noTxV = np.sum(total_cost_noTxV)
+            cost_noTxV += loc_cost_noTxV
             txvx_scen_label_age = f'{txvx_scen}'
 
             TxV_econdf_counts = econ_df[(econ_df.screen_scen == screen_scen_label) & (econ_df.vx_scen == vx_scen_label)
@@ -542,10 +540,10 @@ def plot_CEA(locations=None, background_scens=None, txvx_scen=None, discounting=
                              (TxV_econdf_counts['new_leeps'].values * cost_dict['leep']) + \
                              (TxV_econdf_counts['new_cancer_treatments'].values * cost_dict['cancer'])
             if discounting:
-                cost_TxV = np.sum([i / 1.03 ** t for t, i in enumerate(total_cost_TxV)])
+                loc_cost_TxV = np.sum([i / 1.03 ** t for t, i in enumerate(total_cost_TxV)])
             else:
-                cost_TxV = np.sum(total_cost_TxV)
-            cost_TxV += cost_TxV
+                loc_cost_TxV = np.sum(total_cost_TxV)
+            cost_TxV += loc_cost_TxV
 
         dalys_averted = dalys_noTxV - dalys_TxV
         additional_cost = cost_TxV - cost_noTxV

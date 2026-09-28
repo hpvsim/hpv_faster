@@ -20,7 +20,7 @@ sys.path.insert(0, str(project_dir / "hpv_scenarios"))
 from core.seed_batch_manager import SeedBatchManager, merge_seed_batches
 
 
-def show_progress(base_dir: str, filestem: str = "_jul22"):
+def show_progress(base_dir: str, filestem: str = "_nov06"):
     """Show progress summary for all scenarios."""
     manager = SeedBatchManager(base_dir, filestem)
     summary = manager.get_progress_summary()
@@ -52,7 +52,7 @@ def show_progress(base_dir: str, filestem: str = "_jul22"):
         print()
 
 
-def merge_batches(base_dir: str, country: str, scenario: str, filestem: str = "_jul22"):
+def merge_batches(base_dir: str, country: str, scenario: str, filestem: str = "_nov06"):
     """Merge partial results for a specific country-scenario combination."""
     print(f"Merging batches for {country} - {scenario}...")
     
@@ -65,7 +65,7 @@ def merge_batches(base_dir: str, country: str, scenario: str, filestem: str = "_
         print("✗ Failed to merge results")
 
 
-def cleanup_temp(base_dir: str, filestem: str = "_jul22", country: str = None, scenario: str = None):
+def cleanup_temp(base_dir: str, filestem: str = "_nov06", country: str = None, scenario: str = None):
     """Clean up temporary simulation files."""
     manager = SeedBatchManager(base_dir, filestem)
     
@@ -79,7 +79,7 @@ def cleanup_temp(base_dir: str, filestem: str = "_jul22", country: str = None, s
     print("✓ Cleanup completed")
 
 
-def run_batch(base_dir: str, seed_range: tuple, filestem: str = "_jul22", 
+def run_batch(base_dir: str, seed_range: tuple, filestem: str = "_nov06", 
               countries: list = None, debug: bool = False):
     """Run a specific seed batch."""
     print(f"Running seed batch {seed_range[0]}-{seed_range[1]}...")
@@ -111,8 +111,8 @@ def main():
     parser = argparse.ArgumentParser(description="HPV Vaccination Seed Batch Manager")
     parser.add_argument("--base-dir", default=None, 
                        help="Base results directory (default: auto-detect)")
-    parser.add_argument("--filestem", default="_jul22",
-                       help="File suffix (default: _jul22)")
+    parser.add_argument("--filestem", default="_nov06",
+                       help="File suffix (default: _nov06)")
     
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
     

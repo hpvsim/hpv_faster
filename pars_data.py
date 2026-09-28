@@ -112,26 +112,14 @@ for location in loc.locations:
 
 
 #%% PARTNERS
-for location in loc.locations:
-    if location is None:
-    # if location == 'india':
-        m_partners = dict(
-            m=dict(dist='poisson1', par1=0.001),
-            c=dict(dist='poisson1', par1=10),
-        )
-        f_partners = dict(
-            m=dict(dist='poisson1', par1=0.001),
-            c=dict(dist='neg_binomial', par1=1, par2=0.2),
-        )
-    else:
-        m_partners = dict(
-            m=dict(dist='poisson1', par1=0.01),
-            c=dict(dist='poisson1', par1=0.2),
-        )
-        f_partners = dict(
-            m=dict(dist='poisson1', par1=0.01),
-            c=dict(dist='poisson1', par1=0.2),
-        )
+m_partners = dict(
+    m=dict(dist='poisson1', par1=0.01),
+    c=dict(dist='poisson1', par1=0.2),
+)
+f_partners = dict(
+    m=dict(dist='poisson1', par1=0.01),
+    c=dict(dist='poisson1', par1=0.2),
+)
 
 
 #%% MIXING

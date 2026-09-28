@@ -20,7 +20,7 @@ class SeedBatchManager:
     Manages seed batches, progress tracking, and incremental result saving.
     """
     
-    def __init__(self, base_dir: str, filestem: str = "_jul22"):
+    def __init__(self, base_dir: str, filestem: str = "_nov06"):
         """
         Initialize the seed batch manager.
         
@@ -291,7 +291,7 @@ class SeedBatchManager:
 
 
 def merge_seed_batches(base_dir: str, country: str, scenario: str, 
-                      seed_ranges: List[Tuple[int, int]], filestem: str = "_jul22") -> str:
+                      seed_ranges: List[Tuple[int, int]], filestem: str = "_nov06") -> str:
     """
     Utility function to merge results from multiple seed batch runs.
     

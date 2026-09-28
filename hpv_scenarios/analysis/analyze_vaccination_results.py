@@ -46,7 +46,7 @@ class VaccinationResultsAnalyzer:
             
         self.multisims = {}
         
-    def load_all_results(self, filestem: str = "_jul21") -> Dict[str, Dict[str, Any]]:
+    def load_all_results(self, filestem: str = "_nov06") -> Dict[str, Dict[str, Any]]:
         """
         Load all vaccination scenario results from saved files.
         
@@ -216,7 +216,7 @@ class VaccinationResultsAnalyzer:
         return pd.DataFrame(summary_data)
     
     def save_summary_report(self, summary_df: pd.DataFrame, 
-                           output_file: str = None, filestem: str = "_jul21"):
+                           output_file: str = None, filestem: str = "_nov06"):
         """
         Save summary report to CSV file.
         
@@ -283,7 +283,7 @@ def main():
     print("=" * 50)
     
     # Configuration
-    filestem = "_jul21"
+    filestem = "_nov06"
     
     # Initialize analyzer
     analyzer = VaccinationResultsAnalyzer()

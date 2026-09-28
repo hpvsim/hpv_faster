@@ -155,7 +155,7 @@ class IncrementalSaver:
             print(f"  ✗ Error saving individual sim {filename}: {e}")
             return None
     
-    def try_create_multisim(self, scenarios: List, countries: List, scenario_idx: int, country_idx: int, n_seeds: int) -> bool:
+    def try_create_multisim(self, scenarios: List, countries: List, scenario_idx: int, n_seeds: int) -> bool:
         """Try to create and save MultiSim if all seeds are complete."""
         scenario = scenarios[scenario_idx]
         # Get country from the scenario's risk profile, not from countries list
@@ -200,19 +200,6 @@ class IncrementalSaver:
             self.save_progress()
             
             print(f"  ✓ Saved MultiSim: {filename}")
-            
-            # Clean up individual seed files to save space
-            # DISABLED: Keep temp files for debugging/analysis
-            # for seed in range(n_seeds):
-            #     sim_key = f"{scenario.name}_{country}_{seed}"
-            #     if sim_key in self.progress["completed_sims"]:
-            #         seed_filepath = self.progress["completed_sims"][sim_key]
-            #         try:
-            #             Path(seed_filepath).unlink(missing_ok=True)
-            #             del self.progress["completed_sims"][sim_key]
-            #         except Exception as e:
-            #             print(f"  Warning: Could not clean up {seed_filepath}: {e}")
-            
             return True
             
         except Exception as e:
@@ -403,10 +390,6 @@ class VaccinationScenarioRunner:
                 except FileNotFoundError:
                     print("Error: best_params_combined.json not found")
                     calib_pars = None
-            else:
-                # Load from legacy obj files
-                results_path = "results"  # Now relative to main project dir
-                calib_pars = sc.loadobj(f"{results_path}/{country_clean}_pars{filestem}.obj")
             
             # Get risk profile parameters
             if scenario.risk_profile:
@@ -440,11 +423,7 @@ class VaccinationScenarioRunner:
                                         0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008,
                                         0.05 , 0.015, 0.005, 0.   ])
             # Create simulation parameters similar to make_sim
-            mylayer_probs = dp.make_layer_probs(location=country, marriage_scale=1) 
-            if scenario.risk_profile.risk_level == "high_risk":
-                mylayer_probs['c'][1:, 2] =0.2
-            elif scenario.risk_profile.risk_level == "ultra_high_risk": 
-                mylayer_probs['c'][1:, 2] =0.5
+            mylayer_probs = dp.make_layer_probs(location=country, marriage_scale=1)
             print(myedges.shape)
             print(mystandard_pop.shape)
             pars = dict(
@@ -503,8 +482,10 @@ class VaccinationScenarioRunner:
             # Always return to original directory
             os.chdir(original_cwd)
     
-    def run_scenario_batch(self, scenarios: List[ScenarioDefinition], 
-                          countries: List[str], filestem: str = "_nov06", coverage: float = 0.8) -> Dict[str, Any]:
+    def run_scenario_batch(self, scenarios: List[ScenarioDefinition],
+                          countries: List[str], filestem: str = "_nov06", coverage: float = 0.8,
+                          risk_levels: Optional[List[str]] = None,
+                          overwrite: bool = False) -> Dict[str, Any]:
         """
         Run a batch of scenarios for multiple countries with incremental saving.
         Uses IncrementalSaver to save results as they complete and avoid hanging.
@@ -533,10 +514,12 @@ class VaccinationScenarioRunner:
         ikw = []
         count = 0
         
-        # Filter scenarios to only include those for the specified countries
+        # Filter scenarios by country and optionally by risk level
         filtered_scenarios = []
         for scenario in scenarios:
-            if scenario.risk_profile and scenario.risk_profile.country in countries:
+            country_ok = scenario.risk_profile and scenario.risk_profile.country in countries
+            risk_ok = risk_levels is None or (scenario.risk_profile and scenario.risk_profile.risk_level in risk_levels)
+            if country_ok and risk_ok:
                 filtered_scenarios.append(scenario)
         
         n_sims = len(filtered_scenarios) * self.n_seeds
@@ -549,8 +532,8 @@ class VaccinationScenarioRunner:
             for i_s in range(self.n_seeds):
                 count += 1
                 
-                # Skip if already complete
-                if saver.is_sim_complete(scenario.name, country, i_s):
+                # Skip if already complete (unless overwrite requested)
+                if not overwrite and saver.is_sim_complete(scenario.name, country, i_s):
                     print(f"Skipping completed sim {count}/{n_sims}: {scenario.name} - {country} - seed {i_s}")
                     continue
                 
@@ -576,7 +559,6 @@ class VaccinationScenarioRunner:
                     count=count,
                     total_sims=n_sims,
                     scenario_idx=i_sc,
-                    country_idx=0,  # Not used in this corrected version
                     saver=saver,
                     filtered_scenarios=filtered_scenarios
                 ))
@@ -584,7 +566,7 @@ class VaccinationScenarioRunner:
         # Run simulations
         sc.heading(f"Running {n_sims} vaccination scenario simulations with {self.n_seeds} seeds each...")
         
-        def run_single_sim_with_saving(scenario, country, seed, filestem, meta, count, total_sims, scenario_idx, country_idx, saver, filtered_scenarios):
+        def run_single_sim_with_saving(scenario, country, seed, filestem, meta, count, total_sims, scenario_idx, saver, filtered_scenarios):
             """Wrapper function for parallel execution with incremental saving."""
             print(f"Running sim {count}/{total_sims}: {scenario.name} - {country} - seed {seed}")
             
@@ -601,7 +583,7 @@ class VaccinationScenarioRunner:
                 if saved_path:
                     # Try to create MultiSim if all seeds are ready
                     multisim_created = saver.try_create_multisim(
-                        filtered_scenarios, countries, scenario_idx, country_idx, self.n_seeds
+                        filtered_scenarios, countries, scenario_idx, self.n_seeds
                     )
                     if multisim_created:
                         print(f"  ✓ MultiSim created and saved for {scenario.name} - {country}")
@@ -654,7 +636,7 @@ class VaccinationScenarioRunner:
             country = scenario.risk_profile.country if scenario.risk_profile else countries[0]
             if not saver.is_multisim_complete(scenario.name, country):
                 multisim_created = saver.try_create_multisim(
-                    filtered_scenarios, countries, i_sc, 0, self.n_seeds
+                    filtered_scenarios, countries, i_sc, self.n_seeds
                 )
                 if multisim_created:
                     print(f"  ✓ Created final MultiSim for {scenario.name} - {country}")
@@ -797,14 +779,19 @@ class VaccinationScenarioRunner:
         return pd.DataFrame(summary_data)
     
     def run_all_vaccination_scenarios(self, countries: Optional[List[str]] = None,
-                                     filestem: str = "_nov06", coverage: float = 0.8) -> Dict[str, Any]:
+                                     filestem: str = "_nov06", coverage: float = 0.8,
+                                     risk_levels: Optional[List[str]] = None,
+                                     overwrite: bool = False) -> Dict[str, Any]:
         """
         Run all vaccination scenarios for specified countries.
-        
+
         Args:
-            countries: List of countries (default: ["zambia", "cote d'ivoire"])
+            countries: List of countries (default: all three)
             filestem: Parameter file suffix
-            
+            risk_levels: Optional list of risk levels to include (e.g. ["ultra_high_risk"]).
+                         None means all risk levels.
+            overwrite: If True, re-run even if progress file marks sims as complete.
+
         Returns:
             Dictionary of MultiSim results
         """
@@ -814,7 +801,7 @@ class VaccinationScenarioRunner:
         # Generate all scenarios
         self.scenario_builder.base_config['coverage'] = coverage
         scenarios = self.scenario_builder.create_vaccination_scenarios()
-        
+
         # Validate scenarios
         print("Validating scenarios...")
         valid_scenarios = []
@@ -824,11 +811,11 @@ class VaccinationScenarioRunner:
                 print(f"Warning: Issues with scenario {scenario.name}: {issues}")
             else:
                 valid_scenarios.append(scenario)
-        
+
         print(f"Running {len(valid_scenarios)} valid scenarios for {len(countries)} countries")
-        
+
         # Run simulations with proper MultiSim structure
-        multisims = self.run_scenario_batch(valid_scenarios, countries, filestem, coverage)
+        multisims = self.run_scenario_batch(valid_scenarios, countries, filestem, coverage, risk_levels, overwrite)
         
         # Save results
         self.save_results(multisims, filestem=filestem, coverage=coverage)
@@ -850,6 +837,7 @@ def main():
     # Configuration
     debug = False  # Set to False for production runs
     filestem = "_nov06"  # Use nov06 calibration parameters by default
+    overwrite = True  # Re-run even if progress file marks sims as complete
 
     # Per-country coverage grids: central value ± {1,2,3,4,5,7,10} pct for Zambia,
     # ± {1,2,3,4,5,7,9} pct for Sierra Leone (capped to avoid exceeding 1.0)
@@ -859,14 +847,16 @@ def main():
     sl_offsets       = [-0.09, -0.07, -0.05, -0.04, -0.03, -0.02, -0.01, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.09]
 
     country_coverages = {
-        "zambia":       [round(zambia_central + d, 4) for d in shared_offsets],
-        "sierra leone": [round(sl_central     + d, 4) for d in sl_offsets],
+        "zambia": [round(zambia_central + d, 4) for d in shared_offsets],
+        "sierra leone": [round(sl_central + d, 4) for d in sl_offsets],
     }
+    risk_levels = ["national", "high_risk"]
 
     print("HPV Vaccination Scenario Analysis")
     print("=" * 50)
     print(f"Debug mode: {debug}")
     print(f"Countries: {list(country_coverages.keys())}")
+    print(f"Risk levels: {risk_levels}")
     print(f"Parameter files: {filestem}")
     print()
     for country, coverages in country_coverages.items():
@@ -877,7 +867,7 @@ def main():
 
             # Run all scenarios
             try:
-                results = runner.run_all_vaccination_scenarios([country], filestem, coverage)
+                results = runner.run_all_vaccination_scenarios([country], filestem, coverage, risk_levels, overwrite)
 
                 print("\n" + "=" * 50)
                 print("Vaccination scenario analysis completed successfully!")

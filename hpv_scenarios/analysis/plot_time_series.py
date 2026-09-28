@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple
 import os
 
 def load_scenario_results(results_dir: str = "../results/vaccination", 
-                         filestem: str = "_jul21") -> Dict[str, Dict[str, sc.objdict]]:
+                         filestem: str = "_nov06") -> Dict[str, Dict[str, sc.objdict]]:
     """
     Load all vaccination scenario results.
     
@@ -26,7 +26,7 @@ def load_scenario_results(results_dir: str = "../results/vaccination",
         Dictionary organized by country and scenario name
     """
     results = {}
-    countries = ["zambia", "cote_d_ivoire"]
+    countries = ["zambia", "cote_d_ivoire", "sierra_leone"]
     scenarios = [
         "baseline_national", "vx_annual_9-10_NAT", "vx_biennial_9-11_NAT", 
         "vx_triennial_9-12_NAT", "vx_quadrennial_9-13_NAT", "vx_quinquennial_9-14_NAT",
@@ -212,7 +212,7 @@ def plot_cancer_time_series(results: Dict[str, Dict[str, sc.objdict]],
 
 def create_all_plots(results_dir: str = "../results/vaccination",
                     output_dir: str = "../results/plots",
-                    filestem: str = "_jul21"):
+                    filestem: str = "_nov06"):
     """
     Create all time series plots for both countries and risk levels.
     
@@ -228,7 +228,7 @@ def create_all_plots(results_dir: str = "../results/vaccination",
     print("Loading vaccination scenario results...")
     results = load_scenario_results(results_dir, filestem)
     
-    countries = ["zambia", "cote_d_ivoire"]
+    countries = ["zambia", "cote_d_ivoire", "sierra_leone"]
     risk_levels = ["national", "high_risk"]
     
     for country in countries:

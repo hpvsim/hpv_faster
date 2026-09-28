@@ -1,14 +1,16 @@
 """
-Plot HPV infections vs vaccination coverage for Zambia risk scenarios.
+Plot HPV infections vs vaccination coverage for a country's risk scenarios.
 
-For each Zambia risk scenario (HR, NAT, UHR), produces a figure where:
-  - x-axis: coverage relative to 55% (percentage points, -10 to +10)
-  - y-axis: cumulative HPV infections relative to the annual scenario at 55% coverage
+For each risk scenario (HR, NAT), produces a figure where:
+  - x-axis: coverage relative to reference (percentage points)
+  - y-axis: cumulative HPV infections relative to the annual scenario at reference coverage
   - one line per non-annual campaign frequency (biennial, triennial, quadrennial, quinquennial)
 
 Reads msim results from `hpv_scenarios/results/vaccination_2026Jun_cov{0pNN}/` folders.
+Pass --country to specify the country (default: zambia).
 """
 
+import argparse
 import os
 import re
 import glob
@@ -23,7 +25,7 @@ FOLDER_GLOB = "vaccination_2026Jun_cov*"
 FILESTEM = "_nov06"
 
 COUNTRY = "zambia"
-RISK_SCENARIOS = ["HR", "NAT", "UHR"]
+RISK_SCENARIOS = ["NAT", "HR"]
 REFERENCE_COVERAGE = 0.55
 REFERENCE_CAMPAIGN = "annual"
 SUM_START_YEAR = 2025  # sum infections from this year onward
@@ -152,7 +154,7 @@ def plot_one_risk(risk, data_for_risk, output_path):
     ax.axvline(0.0, color="black", linestyle=":", linewidth=1, alpha=0.5)
     ax.set_xlabel("Coverage change vs 55% (percentage points)")
     ax.set_ylabel(f"Cumulative HPV infections\n(relative to annual @ {REFERENCE_COVERAGE:.0%})")
-    ax.set_title(f"Zambia {risk}: coverage vs HPV infections (error bars: SEM across {n_seeds_label} seeds)")
+    ax.set_title(f"{COUNTRY.replace('_', ' ').title()} {risk}: coverage vs HPV infections (error bars: SEM across {n_seeds_label} seeds)")
     ax.set_xlim(-11, 11)
     ax.legend(title="Campaign frequency")
     ax.grid(True, alpha=0.3)
@@ -209,7 +211,7 @@ def plot_one_risk_paired(risk, data_for_risk, output_path):
     ax.set_xlabel("Coverage change vs 55% (percentage points)")
     ax.set_ylabel(f"Cumulative HPV infections (per-seed ratio)\nvs annual @ {REFERENCE_COVERAGE:.0%}")
     ax.set_title(
-        f"Zambia {risk}: coverage vs HPV infections "
+        f"{COUNTRY.replace('_', ' ').title()} {risk}: coverage vs HPV infections "
         f"(paired by seed; error bars: SEM across {n_seeds_ref} seeds)"
     )
     ax.set_xlim(-11, 11)
@@ -222,6 +224,12 @@ def plot_one_risk_paired(risk, data_for_risk, output_path):
 
 
 def main():
+    global COUNTRY
+    parser = argparse.ArgumentParser(description="Plot HPV infections vs vaccination coverage.")
+    parser.add_argument("--country", default=COUNTRY, help="Country name (underscore-separated, e.g. sierra_leone)")
+    args = parser.parse_args()
+    COUNTRY = args.country
+
     coverage_folders = discover_coverage_folders(RESULTS_ROOT)
     if not coverage_folders:
         print(f"No coverage folders found under {RESULTS_ROOT}")
@@ -234,9 +242,9 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     for risk in RISK_SCENARIOS:
-        out_path = os.path.join(output_dir, f"zambia_{risk}_coverage_sweep.png")
+        out_path = os.path.join(output_dir, f"{COUNTRY}_{risk}_coverage_sweep.png")
         plot_one_risk(risk, data[risk], out_path)
-        paired_path = os.path.join(output_dir, f"zambia_{risk}_coverage_sweep_paired.png")
+        paired_path = os.path.join(output_dir, f"{COUNTRY}_{risk}_coverage_sweep_paired.png")
         plot_one_risk_paired(risk, data[risk], paired_path)
 
 

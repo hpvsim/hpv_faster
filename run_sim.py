@@ -112,7 +112,6 @@ def make_sim(
 def run_sim(
     location=None,
     screen_intv=None,
-    txvx_intv=None,
     vx_intv=None,
     analyzers=None,
     debug=0,

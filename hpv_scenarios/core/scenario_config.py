@@ -49,7 +49,7 @@ class VaccinationConfig:
         prod = hpv.default_vx(prod_name=self.product)
         
         # Country-specific interventions for 2019-2025
-        if self.country and self.country.lower() in ['cote d\'ivoire', 'zambia', 'sierra leone']:
+        if self.country and self.country.lower() in ['zambia', 'sierra leone']:
             interventions.extend(self._get_country_specific_interventions(prod))
         else:
             # Fallback to original logic if no country specified
@@ -83,32 +83,15 @@ class VaccinationConfig:
         """Get country-specific interventions for 2019-2025."""
         interventions = []
 
-        if self.country.lower() == 'cote d\'ivoire':
-            # Cote d'Ivoire specific interventions 2019-2025
-            # TODO: Fill in actual coverage and age ranges for each year
+        if self.country.lower() == 'zambia':
             interventions_config = [
-                # Year, coverage, age_min, age_max, label
-                (2019, 0.06, 9, 10, "CdI 2019 vx"),  # Placeholder - update with actual values
-                (2020, 0.09, 9, 10, "CdI 2020 vx"),  # Placeholder - update with actual values  
-                (2021, 0.27, 9, 10, "CdI 2021 vx"),  # Placeholder - update with actual values
-                (2022, 0.48, 9, 10, "CdI 2022 vx"),  # Placeholder - update with actual values
-                (2023, 0.74, 9, 10, "CdI 2023 vx"),  # Placeholder - update with actual values
-                (2024, 0.46, 9, 10, "CdI 2024 vx"),  # Placeholder - update with actual values
-                (2025, 0.46, 9, 18, "CdI 2025 vx"),  # Placeholder - update with actual values
-            ]
-            
-        elif self.country.lower() == 'zambia':
-            # Zambia specific interventions 2019-2025
-            # TODO: Fill in actual coverage and age ranges for each year
-            interventions_config = [
-                # Year, coverage, age_min, age_max, label
-                (2019, 0.75, 9, 14, "Zambia 2019 vx"),  # Placeholder - update with actual values
-                (2020, 0.61, 9, 14, "Zambia 2020 vx"),  # Placeholder - update with actual values
-                (2021, 0.39, 9, 14, "Zambia 2021 vx"),  # Placeholder - update with actual values
-                (2022, 0.38, 9, 10, "Zambia 2022 vx"),  # Placeholder - update with actual values
-                (2023, 0.63, 9, 14, "Zambia 2023 vx"),  # Placeholder - update with actual values
-                (2024, 0.23, 9, 10, "Zambia 2024 vx"),  # Placeholder - update with actual values
-                (2025, 0.23, 9, 10, "Zambia 2025 vx"),  # Placeholder - update with actual values
+                (2019, 0.75, 9, 14, "Zambia 2019 vx"),
+                (2020, 0.61, 9, 14, "Zambia 2020 vx"),
+                (2021, 0.39, 9, 14, "Zambia 2021 vx"),
+                (2022, 0.38, 9, 10, "Zambia 2022 vx"),
+                (2023, 0.63, 9, 14, "Zambia 2023 vx"),
+                (2024, 0.23, 9, 10, "Zambia 2024 vx"),
+                (2025, 0.23, 9, 10, "Zambia 2025 vx"),
             ]
 
         elif self.country.lower() == 'sierra leone':
@@ -164,18 +147,11 @@ class RiskProfileConfig:
     SUBREGIONS = {
         "zambia": {
             "national": "Zambia",
-            "high_risk": ["Zambia Western", "Zambia Luapula"],
-            "ultra_high_risk": ["Zambia Ultra High Risk"]
-        },
-        "cote d'ivoire": {
-            "national": "Cote d'Ivoire",
-            "high_risk": ["Cote d'Ivoire Denguele"],
-            "ultra_high_risk": ["Cote d'Ivoire Ultra High Risk"]
+            "high_risk": ["Zambia High Risk"],
         },
         "sierra leone": {
             "national": "Sierra Leone",
             "high_risk": ["Sierra Leone High Risk"],
-            "ultra_high_risk": ["Sierra Leone Ultra High Risk"]
         }
     }
     
@@ -189,14 +165,7 @@ class RiskProfileConfig:
             if self.subregion:
                 return self.subregion
             else:
-                # Return first high-risk subregion by default
                 return self.SUBREGIONS[country_lower]["high_risk"][0]
-        elif self.risk_level == "ultra_high_risk":
-            if self.subregion:
-                return self.subregion
-            else:
-                # Return first ultra-high-risk subregion by default
-                return self.SUBREGIONS[country_lower]["ultra_high_risk"][0]
         else:
             raise ValueError(f"Unknown risk level: {self.risk_level}")
     
@@ -223,8 +192,6 @@ class ScenarioDefinition:
         if not self.name and self.vaccination:
             if self.risk_profile and self.risk_profile.risk_level == "national":
                 risk_suffix = "NAT"
-            elif self.risk_profile and self.risk_profile.risk_level == "ultra_high_risk":
-                risk_suffix = "UHR"
             else:
                 risk_suffix = "HR"
             self.name = f"{self.vaccination.scenario_id}_{risk_suffix}"
@@ -240,7 +207,7 @@ class ScenarioDefinition:
         
         return interventions
     
-    def get_result_filename(self, country: str, filestem: str = "_jul21") -> str:
+    def get_result_filename(self, country: str, filestem: str = "_nov06") -> str:
         """Generate standardized result filename."""
         country_clean = country.lower().replace(" ", "_").replace("'", "_")
         risk_suffix = ""
@@ -253,7 +220,7 @@ class ScenarioBuilder:
     """Factory class for building scenario configurations."""
     
     def __init__(self):
-        self.countries = ["cote d'ivoire", "zambia", "sierra leone"]
+        self.countries = ["zambia", "sierra leone"]
         self.base_config = {
             'coverage': 0.80,  # More realistic coverage level
             'start_year': 2025,
@@ -280,12 +247,12 @@ class ScenarioBuilder:
         
         # Create scenarios for each country and risk profile
         for country in self.countries:
-            for risk_level in ["national", "high_risk", "ultra_high_risk"]:
+            for risk_level in ["national", "high_risk"]:
                 
                 # Baseline (no vaccination)
                 risk_config = RiskProfileConfig(country=country, risk_level=risk_level)
                 # Use consistent naming with vaccination scenarios
-                risk_suffix = "NAT" if risk_level == "national" else ("HR" if risk_level == "high_risk" else "UHR")
+                risk_suffix = "NAT" if risk_level == "national" else "HR"
                 baseline = ScenarioDefinition(
                     vaccination=None,
                     risk_profile=risk_config,
@@ -361,8 +328,8 @@ class ScenarioValidator:
         if config.country.lower() not in config.SUBREGIONS:
             issues.append(f"Unknown country: {config.country}")
         
-        if config.risk_level not in ["national", "high_risk", "ultra_high_risk"]:
-            issues.append(f"Risk level must be 'national', 'high_risk', or 'ultra_high_risk', got {config.risk_level}")
+        if config.risk_level not in ["national", "high_risk"]:
+            issues.append(f"Risk level must be 'national' or 'high_risk', got {config.risk_level}")
         
         return issues
     
